@@ -1,0 +1,9 @@
+.ssl/
+*._*
+.DS_Store
+.ruby-gemset.*
+.ruby-version.*
+.rvmrc.*
+•*/
+
+application.yml
