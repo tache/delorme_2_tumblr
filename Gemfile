@@ -14,3 +14,5 @@ gem 'nokogiri'
 gem 'curb'                        # Ruby bindings for libcurl - https://github.com/taf2/curb
 gem 'aws-sdk' 
 gem 'ruby-units'                  # A unit handling library for ruby - https://github.com/olbrich/ruby-units
+gem 'wannabe_bool'                # string, numeric, symbol and nil values wanna be a boolean value - https://github.com/prodis/wannabe_bool
+gem 'twilio-ruby'
