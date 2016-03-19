@@ -4,44 +4,72 @@ Delomre-2-Tumblr is a ruby script that grabs the Delorme MapShare KML and create
 
 In particular, it does the following
 * Pulls the Delorme MapShare KML feed
-* Extracts the points
-* Creates an image based on the KML
-* Gets the current weather coniction and forecast based upon the last point
+* Extracts the points from the KML
+* Creates a static map image based on the point of the KML
+* Gets the current weather conditions and upcoming forecast based upon the last point
 * Posts a blog entry on Tumblr
+* Uploads the static map image to AWS S3
+* Sends a Twilio SMS/MMS message with the static map image.
 
 ## Setting up the script
 
-The following items have to be in your enviroment 
+The following items have to be setup in the `config.yml` file. Copy the `config.template` and set appropriately.
 
 ## Configuration
 
 Google Maps
 ```
-export GOOGLE_MAPS_API_KEY="------"
+GOOGLE_MAPS_API_KEY: "---"
 ```
 
 Tumblr API
 ```
-export TUMBLR_CONSUMER_KEY="="------""
-export TUMBLR_CONSUMER_SECRET="="------""
-export TUMBLR_OAUTH_TOKEN="="------""
-export TUMBLR_OAUTH_TOKEN_SECRET="="------""
+TUMBLR_CONSUMER_KEY: "---"
+TUMBLR_CONSUMER_SECRET: "---"
+TUMBLR_OAUTH_TOKEN: "---"
+TUMBLR_OAUTH_TOKEN_SECRET: "---"
 ```
 
 Tumbr Blog
 ```
-export TUMBLR_HIKER_NAME="="------""
-export TUMBLR_ACCOUNT="="------""
+TUMBLR_ACCOUNT: "---"
+TUMBLR_HIKER_NAME: "---"
+TUMBLR_BLOG_URL: "---"
 ```
 
 Delorme MapShare KML Feed
 ```
-export DELORME_INREACH_MAPSHARE="="------""
-export DELORME_INREACH_MAPSHARE_ACCOUNT="="------""
-export DELORME_INREACH_MAPSHARE_PASSWORD="="------""
+DELORME_INREACH_MAPSHARE: "---"
+DELORME_INREACH_MAPSHARE_ACCOUNT: "---"
+DELORME_INREACH_MAPSHARE_PASSWORD: "---"
 ```
 
 Forecast IO API
 ```
-export FORECAST_IO_API_KEY="="------""
+FORECAST_IO_API_KEY: "---"
 ```
+
+AWS S3 API - support MMS images for Twilio
+```
+AWS_S3_ACCESS_KEY: "---"
+AWS_S3_SECRET_KEY: "---"
+AWS_S3_BUCKET: "---"
+AWS_S3_FOLDER: "---"
+```
+
+Twilio MMS API
+```
+TWILIO_NUMBER: '---' 
+TWILIO_ACCOUNT_SID: '---' 
+TWILIO_AUTH_TOKEN: '---' 
+```
+
+Twilio SMS/MMS Recipient list
+```
+SMS_RECIPIENTS: '{ "+12025551212": "John",  "+12025551212": "Jane" }'
+```
+
+
+
+
+
