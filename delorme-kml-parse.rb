@@ -9,7 +9,6 @@ require 'json/ext'
 require 'wannabe_bool'
 require 'json'
 require 'yaml'
-require 'twilio-ruby'
 
 unless ARGV[0] and ARGV[1]
   puts "\nYou need to the number of days and the debugging flag\n"
@@ -58,18 +57,3 @@ else
   abort
 end
 
-# ---------------------------------------
-
-client = Twilio::REST::Client.new @TWILIO_ACCOUNT_SID, @TWILIO_AUTH_TOKEN
-
-sms_recipient_list = JSON.parse(@SMS_RECIPIENTS)
- 
-sms_recipient_list.each do |key, value|
-  r = client.account.messages.create(
-    :from => @TWILIO_NUMBER,
-    :to => key,
-    :body => "Location #{last_point_hash}"
-  )
-  ap r.status if verbose
-  puts "Sent message to #{value}"
-end
