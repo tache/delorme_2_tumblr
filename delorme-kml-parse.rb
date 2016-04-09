@@ -12,7 +12,7 @@ require 'yaml'
 
 unless ARGV[0] and ARGV[1]
   puts "\nYou need to the number of days and the debugging flag\n"
-  puts "Usage: delorme-kml-parse.rb [DAYS] [VERBOSE]\n"
+  puts "Usage: delorme-kml-parse.rb [# DAYS] [yes/no]\n"
   exit
 end
 
@@ -56,4 +56,7 @@ else
   puts "No new waypoints found!" if verbose
   abort
 end
+
+ap location_latitude
+ap location_longitude
 

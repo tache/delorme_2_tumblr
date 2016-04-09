@@ -1,6 +1,7 @@
 source 'https://rubygems.org'
 ruby '2.2.4'
 
+gem 'oauth'
 gem 'tumblr_client'               # A Ruby Wrapper for the Tumblr v2 API
 gem "awesome_print"               # Pretty print your Ruby objects with style
 gem 'geocoder'                    # Complete Ruby geocoding solution
@@ -16,3 +17,4 @@ gem 'aws-sdk'
 gem 'ruby-units'                  # A unit handling library for ruby - https://github.com/olbrich/ruby-units
 gem 'wannabe_bool'                # string, numeric, symbol and nil values wanna be a boolean value - https://github.com/prodis/wannabe_bool
 gem 'twilio-ruby'
+gem 'twitter'                     # Ruby interface to the Twitter API. https://github.com/sferik/twitter

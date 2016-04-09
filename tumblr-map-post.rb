@@ -4,7 +4,6 @@ require 'active_support'
 require 'active_support/core_ext'
 require 'awesome_print'
 require 'curb'
-require 'ffaker'
 require 'forecast_io'
 require 'geocoder'
 require 'json/ext'
@@ -17,26 +16,46 @@ require 'aws-sdk'
 require 'wannabe_bool'
 require 'yaml'
 require 'twilio-ruby'
+require 'twitter'
 
 # ---------------------------------------
 
-# Get the command line arguments
+# Get the apps defaults
 
-unless ARGV[0] and ARGV[1]
+unless ARGV[0] and ARGV[1] and ARGV[2] and ARGV[3]
   puts "\nYou need to the number of days and the debugging flag\n"
-  puts "Usage: tumblr-map-post.rb [DAYS] [VERBOSE]\n"
+  puts "Usage: tumblr-map-post.rb [# DAYS] [debug yes/no] [post yes/no] [map zoom level]\n"
   exit
 end
 
 start_date = ARGV[0].to_i.days.ago.utc.iso8601
 verbose = ARGV[1].to_b
+post_blog_message = ARGV[2].to_b
+map_zoom = ARGV[3].to_i
+
+if Time.now.hour == 14
+  map_zoom = 16
+elsif Time.now.hour == 18
+  map_zoom = 12
+elsif Time.now.hour == 21
+  map_zoom = 8
+else
+  map_zoom = ARGV[3].to_i
+end
 
 # ---------------------------------------
 
-# Get all the environmental variables - the secret ones.
+# Get all the environmental variables - the super secret ones. Modify the template
 
 config = YAML.load_file("config.yml")
 config["config"].each { |key, value| instance_variable_set("@#{key}", value) }
+
+# ---------------------------------------
+
+# Get the time on the trail
+
+Time.zone = "Pacific Time (US & Canada)"
+time_on_trail = Time.zone.now.strftime("%B %e, %Y at %I:%M %p %Z")
 
 # ---------------------------------------
 
@@ -71,19 +90,24 @@ if kml_hash["kml"]["Document"]["Folder"].present?
   location_longitude = polyline_points.first[1] unless polyline_points.empty?
   last_point_hash = {"latitude" => location_latitude, "longitude" => location_longitude}
 
-  puts last_point_hash.to_json if verbose
-  puts kml_points.to_json if verbose
+  puts "#{time_on_trail} - Last waypoint - #{last_point_hash.to_json}" if verbose
+  # puts last_point_hash.to_json if verbose
+  # puts kml_points.to_json if verbose
 else
   kml_points = []
-  puts "No new waypoints found!" if verbose
+  puts "#{time_on_trail} - No new waypoints found!" if verbose
   abort
 end
 
+ # this is for testing
+ # polyline_points = []
+ # location_latitude = 32.7120425
+ # location_longitude = -117.172764
+ # map_zoom = 14
+ 
 # ---------------------------------------
 
 # Create a Google Static Map Image
-
-map_zoom = 10
 
 polyline_data = Polylines::Encoder.encode_points(polyline_points)
 
@@ -106,22 +130,15 @@ location_query_result = Geocoder.search("#{location_latitude},#{location_longitu
 
 # ---------------------------------------
 
-# Get the number of days passed
+# Get the number of days passed on the trail
 
-start_time = Time.new(2016,1,1)
+start_time = Time.new(2016,4,8)
 end_time = Time.now
 time_days = TimeDifference.between(start_time, end_time).in_days.floor 
 
 # ---------------------------------------
 
-# Get the time on the trail
-
-Time.zone = "Pacific Time (US & Canada)"
-time_on_trail = Time.zone.now.strftime("%B %e, %Y at %I:%M %p %Z")
-
-# ---------------------------------------
-
-# Get the weather conditions
+# Get the current and forcasted weather conditions
 
 ForecastIO.api_key = @FORECAST_IO_API_KEY
 forecast = ForecastIO.forecast(location_latitude,location_longitude)
@@ -130,14 +147,14 @@ forecast_hourly = forecast.hourly.summary
 
 # ---------------------------------------
 
-# Post the blog entry
+# Post the Tumblr blog entry
 
-caption_text = "Latest location update for #{@TUMBLR_HIKER_NAME}!\nLocation Coordinates: [#{location_latitude},#{location_longitude}]\nTime on the PCT: #{time_days} days\nTime posted: #{time_on_trail}"
+caption_text = "Latest location update for #{@TUMBLR_HIKER_NAME}!\nLocation Coordinates: [#{location_latitude},#{location_longitude}]\nDays into the PCT: #{time_days} days\nTime posted: #{time_on_trail}"
 if !location_query_result.data.nil?
   formatted_address = location_query_result.data["formatted_address"]
   caption_text = "<h2>Latest location update for #{@TUMBLR_HIKER_NAME}!</h2>"
   caption_text << "<p><b>Location<b></p>"
-  caption_text << "Approximate location: #{formatted_address}<br>Location Coordinates: [#{location_latitude},#{location_longitude}]<br>Time on the PCT: #{time_days} days<br>Time posted: #{time_on_trail}<br><br>"
+  caption_text << "Approximate location: #{formatted_address}<br>Location Coordinates: [#{location_latitude},#{location_longitude}]<br>Days into the PCT: #{time_days} days<br>Time posted: #{time_on_trail}<br><br>"
   caption_text << "<p><b>Weather<b></p>"
   caption_text << "Current conditions: #{forecast_currently}<br>Forecast: #{forecast_hourly}<br><br>"
   if !forecast.alerts.nil?
@@ -146,6 +163,7 @@ if !location_query_result.data.nil?
       caption_text << alert.title + "<br>"
     end
   end
+  caption_text << "#pacificcresttrail #hikers #pct2016 #PCTA #pct <br>"
 end
 
 tumblr_client = Tumblr::Client.new({
@@ -156,7 +174,29 @@ tumblr_client = Tumblr::Client.new({
   :oauth_token_secret => @TUMBLR_OAUTH_TOKEN_SECRET
 })
 
-response = tumblr_client.photo(@TUMBLR_ACCOUNT, {:caption => caption_text, :data => ["./#{mapImageFilename}"]})
+if post_blog_message
+  response = tumblr_client.photo(@TUMBLR_ACCOUNT, {:caption => caption_text, :data => ["./#{mapImageFilename}"]})
+  ap response
+end
+
+# ---------------------------------------
+
+# Post the Twitter Tweet
+
+twitter = Twitter::REST::Client.new do |twitter_config|
+  twitter_config.consumer_key = @TWITTER_CONSUMER_KEY
+  twitter_config.consumer_secret = @TWITTER_CONSUMER_SECRET
+  twitter_config.access_token = @TWITTER_ACCESS_TOKEN
+  twitter_config.access_token_secret = @TWITTER_ACCESS_TOKEN_SECRET
+end
+
+if post_blog_message
+  twitter.update_with_media("Current Location!\nDays into #pacificcresttrail #{time_days}\nWeather: #{forecast.currently.temperature.round} °F with winds of #{forecast.currently.windSpeed.round} mph\n#hikers #pct2016 #PCTA #pct", 
+    File.new("./#{mapImageFilename}"),
+    lat: location_latitude, 
+    long: location_longitude, 
+    display_coordinates: true)
+end
 
 # ---------------------------------------
 
@@ -180,14 +220,15 @@ twilio_client = Twilio::REST::Client.new @TWILIO_ACCOUNT_SID, @TWILIO_AUTH_TOKEN
  
 sms_recipient_list = JSON.parse(@SMS_RECIPIENTS)
 
-sms_recipient_list.each do |key, value|
-  response = twilio_client.account.messages.create(
-    :from => @TWILIO_NUMBER,
-    :to => key,
-    :body => "Latest location update for #{@TUMBLR_HIKER_NAME}! See the blog entry at #{@TUMBLR_BLOG_URL}",
-	  :media_url => s3_image_url,
-  )
-  ap response.status if verbose
-  puts "Sent message to #{value}"
+if post_blog_message
+  sms_recipient_list.each do |key, value|
+    response = twilio_client.account.messages.create(
+      :from => @TWILIO_NUMBER,
+      :to => key,
+      :body => "Latest location update for #{@TUMBLR_HIKER_NAME}! See the blog entry at #{@TUMBLR_BLOG_URL}",
+  	  :media_url => s3_image_url,
+    )
+    ap response.status if verbose
+    puts "Sent message to #{value}"
+  end
 end
-
