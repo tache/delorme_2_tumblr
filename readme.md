@@ -1,4 +1,4 @@
-# Delorme-2-Tumblr
+# Delorme-2-Social
 
 Delomre-2-Tumblr is a ruby script that grabs the Delorme MapShare KML and creates a Tumblr post.
 
@@ -8,6 +8,7 @@ In particular, it does the following
 * Creates a static map image based on the points from the KML
 * Gets the current weather conditions and upcoming forecast based upon the last point
 * Posts a blog entry on Tumblr
+* Posts a blog entry on Twitter
 * Uploads the static map image to AWS S3
 * Sends a Twilio SMS/MMS message with the static map image.
 

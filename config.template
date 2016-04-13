@@ -32,4 +32,9 @@ config:
   TWITTER_CONSUMER_SECRET: "---"
   TWITTER_ACCESS_TOKEN: "---"
   TWITTER_ACCESS_SECRET: "---"
-
+  
+  TRAIL_TIMEZONE: "Pacific Time (US & Canada)"
+  
+  TWITTER_SOCIAL_HASHTAGS: "#PCTA #pct"
+  TUMBLR_SOCIAL_HASHTAGS: "#PCTA #pct"
+  
