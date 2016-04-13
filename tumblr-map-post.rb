@@ -96,9 +96,6 @@ end
 
 kml_hash = Hash.from_xml(kml_doc.to_s)
 
-# if kml_hash["kml"]["Document"]["Folder"].present?
-#   kml_points = kml_hash["kml"]["Document"]["Folder"]["Placemark"].reject{|ind| ind["TimeStamp"] == nil}.collect{|ind| [ind["ExtendedData"]["Data"][8]["value"].to_f, ind["ExtendedData"]["Data"][9]["value"].to_f, ind["TimeStamp"]["when"].to_datetime]} if kml_hash["kml"]["Document"]["Folder"].present?
-
 if kml_hash["kml"]["Document"]["Folder"].present?
   kml_points = kml_hash["kml"]["Document"]["Folder"]["Placemark"].reject{|ind| ind["TimeStamp"] == nil}.collect{
     |ind| { 
@@ -113,7 +110,6 @@ if kml_hash["kml"]["Document"]["Folder"].present?
 
   polyline_points = kml_points.reverse.collect{|ind| [ind["point"]["latitude"], ind["point"]["longitude"]]}
   elevation_points = kml_points.reverse.collect{|ind| ind["point"]["elevation"]}
-  # polyline_points = kml_points.reverse.collect{|ind| [ind[0],ind[1]]}
 
   location_latitude = polyline_points.first[0] unless polyline_points.empty?
   location_longitude = polyline_points.first[1] unless polyline_points.empty?
@@ -124,8 +120,8 @@ if kml_hash["kml"]["Document"]["Folder"].present?
   last_point_hash = {"latitude" => location_latitude, "longitude" => location_longitude}
   start_point_hash = {"latitude" => start_location_latitude, "longitude" => start_location_longitude}
 
-  puts start_point_hash.to_json #if verbose
-  puts last_point_hash.to_json #if verbose
+  puts start_point_hash.to_json if verbose
+  puts last_point_hash.to_json if verbose
 
   puts "#{time_on_trail} - Last waypoint - #{last_point_hash.to_json}" if verbose
   # puts last_point_hash.to_json if verbose
@@ -136,86 +132,86 @@ else
   abort
 end
 
- # this is for testing
- # polyline_points = []
- # location_latitude = 32.7120425
- # location_longitude = -117.172764
- # map_zoom = 14
+# this is for testing
+# polyline_points = []
+# location_latitude = 32.7120425
+# location_longitude = -117.172764
+# map_zoom = 14
  
- # ---------------------------------------
+# ---------------------------------------
 
- g = GpxUtils::TrackImporter.new
- ('A'..'B').each do |ll|
-   g.add_file("./gpx/tracks/CA_Sec_#{ll}_tracks.gpx")
-   puts "inject count: #{g.coords.count}"
- end
+g = GpxUtils::TrackImporter.new
+('A'..'B').each do |ll|
+  g.add_file("./gpx/tracks/CA_Sec_#{ll}_tracks.gpx")
+  # puts "inject count: #{g.coords.count}"
+end
 
-  puts "---------------------------------------"
+# puts "---------------------------------------"
 
-  # find the closet point to the start
-  closest_start_poi = 0
-  closest_start_poi_distance = 123000
-  g.coords.each_with_index do |coord, index|
-    coord_distance = Haversine.distance(start_location_latitude, start_location_longitude, coord[:lat], coord[:lon]).to_miles
-    puts "#{index} - #{closest_start_poi} - #{closest_start_poi_distance} - #{coord_distance} - #{coord[:lat]} - #{coord[:lon]}" if verbose
-    if coord_distance < closest_start_poi_distance
-      closest_start_poi_distance = coord_distance
-      closest_start_poi = index
-    end
+# find the closet point to the start
+closest_start_poi = 0
+closest_start_poi_distance = 123000
+g.coords.each_with_index do |coord, index|
+  coord_distance = Haversine.distance(start_location_latitude, start_location_longitude, coord[:lat], coord[:lon]).to_miles
+  # puts "#{index} - #{closest_start_poi} - #{closest_start_poi_distance} - #{coord_distance} - #{coord[:lat]} - #{coord[:lon]}" if verbose
+  if coord_distance < closest_start_poi_distance
+    closest_start_poi_distance = coord_distance
+    closest_start_poi = index
   end
-  # puts closest_start_poi_distance
-  puts "closest_start_poi : #{closest_start_poi}"# if verbose
-  ap g.coords[closest_start_poi]# if verbose
+end
+# puts closest_start_poi_distance
+puts "closest_start_poi : #{closest_start_poi}" if verbose
+ap g.coords[closest_start_poi] if verbose
 
-  puts "---------------------------------------"
+# puts "---------------------------------------"
 
-  # find the closet point to the end
-  closest_end_poi = 0
-  closest_end_poi_distance = 123000
-  g.coords.each_with_index do |coord, index|
-    coord_end_distance = Haversine.distance(location_latitude, location_longitude, coord[:lat], coord[:lon]).to_miles
-    puts "#{index} - #{closest_end_poi} - #{closest_end_poi_distance} - #{coord_end_distance} - #{coord[:lat]} - #{coord[:lon]}" if verbose
-    if coord_end_distance < closest_end_poi_distance
-      closest_end_poi_distance = coord_end_distance
-      closest_end_poi = index
-    end
+# find the closet point to the end
+closest_end_poi = 0
+closest_end_poi_distance = 123000
+g.coords.each_with_index do |coord, index|
+  coord_end_distance = Haversine.distance(location_latitude, location_longitude, coord[:lat], coord[:lon]).to_miles
+  # puts "#{index} - #{closest_end_poi} - #{closest_end_poi_distance} - #{coord_end_distance} - #{coord[:lat]} - #{coord[:lon]}" if verbose
+  if coord_end_distance < closest_end_poi_distance
+    closest_end_poi_distance = coord_end_distance
+    closest_end_poi = index
   end
+end
 
-  # puts closest_end_poi_distance
-  puts "closest_end_poi : #{closest_end_poi}"# if verbose
-  ap g.coords[closest_end_poi]# if verbose
+# puts closest_end_poi_distance
+puts "closest_end_poi : #{closest_end_poi}" if verbose
+ap g.coords[closest_end_poi] if verbose
 
-  puts "---------------------------------------"
+# puts "---------------------------------------"
 
-  gpx_polyline_points_1 = g.coords[closest_end_poi - (closest_end_poi - closest_start_poi), 1600].reverse.collect{|ind| [ind[:lat], ind[:lon]]}
-  gpx_polyline_points =  gpx_polyline_points_1.each_slice(6).map(&:last)
+gpx_polyline_points_1 = g.coords[closest_end_poi - (closest_end_poi - closest_start_poi), 1600].reverse.collect{|ind| [ind[:lat], ind[:lon]]}
+gpx_polyline_points =  gpx_polyline_points_1.each_slice(6).map(&:last)
 
-  track_distance = 0
-  previous_coord = g.coords[closest_start_poi]
-  g.coords[closest_start_poi + 1, (closest_end_poi - closest_start_poi)].each_with_index do |coord, index|
-    p2p = Haversine.distance(previous_coord[:lat], previous_coord[:lon], coord[:lat], coord[:lon]).to_miles
-    track_distance = track_distance + p2p
-    previous_coord = coord
-    # puts "#{closest_start_poi + index}, #{coord[:lat]}, #{coord[:lon]}, #{p2p.round(2)}"
-  end
-  puts "Distance Traveled: #{track_distance.round(2)}"# if verbose
+track_distance = 0
+previous_coord = g.coords[closest_start_poi]
+g.coords[closest_start_poi + 1, (closest_end_poi - closest_start_poi)].each_with_index do |coord, index|
+  p2p = Haversine.distance(previous_coord[:lat], previous_coord[:lon], coord[:lat], coord[:lon]).to_miles
+  track_distance = track_distance + p2p
+  previous_coord = coord
+  # puts "#{closest_start_poi + index}, #{coord[:lat]}, #{coord[:lon]}, #{p2p.round(2)}"
+end
+puts "Distance Traveled: #{track_distance.round(2)} miles" if verbose
 
- distance_covered = 0
- previous_coord = g.coords[0]
- g.coords[0..closest_end_poi].each_with_index do |coord, index|
-   p2p = Haversine.distance(previous_coord[:lat], previous_coord[:lon], coord[:lat], coord[:lon]).to_miles
-   puts "#{index} - #{distance_covered} - #{p2p}" if verbose
-   distance_covered = distance_covered + p2p
-   previous_coord = coord
- end
- ap distance_covered
+distance_covered = 0
+previous_coord = g.coords[0]
+g.coords[0..closest_end_poi].each_with_index do |coord, index|
+  p2p = Haversine.distance(previous_coord[:lat], previous_coord[:lon], coord[:lat], coord[:lon]).to_miles
+  # puts "#{index} - #{distance_covered} - #{p2p}" if verbose
+  distance_covered = distance_covered + p2p
+  previous_coord = coord
+end
+puts "Overall Distance Traveled: #{distance_covered.round(2)} miles" if verbose
 
- if Time.now.hour == 21
-   g_out = GpxUtils::WaypointsExporter.new
-   File.write("daily_kml_#{Time.now.strftime("%Y%m%d-%H%M")}.gpx", g_out.to_xml)
- end
+if Time.now.hour == 21
+  g_out = GpxUtils::WaypointsExporter.new
+  File.write("daily_kml_#{Time.now.strftime("%Y%m%d-%H%M")}.gpx", g_out.to_xml)
+end
  
- # ---------------------------------------
+# ---------------------------------------
 
 # Create a Google Static Map Image
 
@@ -299,7 +295,7 @@ if !location_query_result.data.nil?
   if !forecast.alerts.nil?
     caption_text << "<p style=\"color:red;\"><b>Weather Alerts</b></p>"
     forecast.alerts.each do |alert|
-      caption_text << alert.title + "<br>"
+      caption_text << alert.title + "<br><br>"
     end
   end
   caption_text << "<p><b>Notes<b></p>"
