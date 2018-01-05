@@ -24,5 +24,5 @@ gem 'twitter'                     # Ruby interface to the Twitter API. https://g
 gem 'wannabe_bool'                # string, numeric, symbol and nil values wanna be a boolean value - https://github.com/prodis/wannabe_bool
 gem 'gchartrb'
 gem 'rmagick'
-
+gem 'gruff', :path => "/Users/cgraham/GitHub/Opensource/gruff-master"
 # gem 'barometer'
