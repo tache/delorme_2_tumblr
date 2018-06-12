@@ -1,8 +1,8 @@
 source 'https://rubygems.org'
-ruby '2.2.4'
+ruby '2.5.1'
 
 gem "awesome_print"               # Pretty print your Ruby objects with style
-gem 'aws-sdk' 
+gem 'aws-sdk'
 gem 'curb'                        # Ruby bindings for libcurl - https://github.com/taf2/curb
 gem 'ffaker'
 gem 'forecast_io'                 #  Retrieve data from the Forecast Weather API - https://github.com/darkskyapp/forecast-ruby
