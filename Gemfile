@@ -1,6 +1,7 @@
 source 'https://rubygems.org'
 ruby '2.5.1'
 
+gem "rack", ">= 2.0.6"
 gem "awesome_print"               # Pretty print your Ruby objects with style
 gem 'aws-sdk'
 gem 'curb'                        # Ruby bindings for libcurl - https://github.com/taf2/curb
